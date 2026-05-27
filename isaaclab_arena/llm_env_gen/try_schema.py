@@ -5,7 +5,7 @@
 
 """Run the LLM parser on a prompt and dump the resolved ArenaEnvGraphSpec.
 
-Requires NV_API_KEY environment variable.
+Requires NV_API_KEY.
 
 Examples:
     # Print the Pydantic LLMEnvSpec JSON schema (no LLM call):
