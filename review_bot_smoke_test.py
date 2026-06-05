@@ -11,3 +11,15 @@ def get_sim_device(arena_builder: ArenaEnvBuilder):
 
 def mean_success(values):
     return sum(values) / len(values)
+
+
+def run_episodes(arena_builder: ArenaEnvBuilder, n):
+    env = arena_builder.make_registered()
+    rewards = []
+    for _ in range(n):
+        obs = env.reset()
+        done = False
+        while not done:
+            obs, reward, done, info = env.step(env.action_space.sample())
+            rewards.append(reward)
+    return mean_success(rewards)
