@@ -23,3 +23,5 @@ def run_episodes(arena_builder: ArenaEnvBuilder, n):
             obs, reward, done, info = env.step(env.action_space.sample())
             rewards.append(reward)
     return mean_success(rewards)
+
+# trigger: re-fire webhook after secret fix
