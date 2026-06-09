@@ -86,6 +86,15 @@ def add_isaaclab_arena_cli_args(parser: argparse.ArgumentParser) -> None:
             "Only affects objects positioned by the placement solver; manually-placed objects are unaffected."
         ),
     )
+    arena_group.add_argument(
+        "--enable_physics_settle_check",
+        action="store_true",
+        default=True,
+        help=(
+            "Enable physics settle check after reset. When False, the settle check is skipped and the placement pool is"
+            " not re-selected."
+        ),
+    )
 
 
 def add_env_graph_spec_cli_args(parser: argparse.ArgumentParser) -> None:

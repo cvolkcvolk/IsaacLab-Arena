@@ -15,6 +15,7 @@ from isaaclab_arena.cli.isaaclab_arena_cli import get_isaaclab_arena_cli_parser
 from isaaclab_arena.evaluation.camera_video import CameraObsVideoRecorder
 from isaaclab_arena.evaluation.policy_runner_cli import add_policy_runner_arguments
 from isaaclab_arena.metrics.metrics_logger import metrics_to_plain_python_types
+from isaaclab_arena.relations.placement_events import run_placement_physics_settle_check
 from isaaclab_arena.utils.isaaclab_utils.simulation_app import SimulationAppContext
 from isaaclab_arena.utils.multiprocess import get_local_rank, get_world_size
 from isaaclab_arena.utils.random import set_seed
@@ -63,6 +64,7 @@ def rollout_policy(
     num_steps: int | None,
     num_episodes: int | None,
     language_instruction: str | None = None,
+    enable_physics_settle_check: bool = True,
 ) -> dict[str, Any]:
     assert num_steps is not None or num_episodes is not None, "Either num_steps or num_episodes must be provided"
     assert num_steps is None or num_episodes is None, "Only one of num_steps or num_episodes must be provided"
@@ -70,6 +72,10 @@ def rollout_policy(
     pbar = None
     try:
         obs, _ = env.reset()
+        # Re-select any placement that doesn't physically settle after the reset.
+        # No-ops internally when the env has no pooled placement at the builder level.
+        if enable_physics_settle_check:
+            run_placement_physics_settle_check(env)
         policy.reset()
         # Determine language instruction: CLI/job-level override takes precedence over the task's own
         # description. Use unwrapped to reach the base env through any gym wrappers (e.g. OrderEnforcing).
@@ -243,7 +249,14 @@ def main():
 
         steps_str = f"{num_steps} steps" if num_steps is not None else f"{num_episodes} episodes"
         print(f"[Rank {local_rank}/{world_size}] Starting rollout ({steps_str})")
-        metrics = rollout_policy(env, policy, num_steps, num_episodes, args_cli.language_instruction)
+        metrics = rollout_policy(
+            env,
+            policy,
+            num_steps,
+            num_episodes,
+            args_cli.language_instruction,
+            enable_physics_settle_check=args_cli.enable_physics_settle_check,
+        )
 
         if metrics is not None:
             print(f"[Rank {local_rank}/{world_size}] Metrics: {metrics_to_plain_python_types(metrics)}")
